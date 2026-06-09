@@ -45,53 +45,20 @@ Output goes to `dist/`. Serve with any static host (`npx serve dist` or GitHub P
 
 ## Deploy to GitHub Pages
 
-The Vite config sets `base: '/timlool/'`. Override with `VITE_BASE` env var if needed.
+The workflow file is already included at `.github/workflows/deploy.yml`.
+The Vite config uses `base: '/timlool/'` which matches this repository name.
 
-### Manual
+### Setup steps
 
-```bash
-npm run build
-npx gh-pages -d dist
-```
+1. Push this project to a GitHub repository named **`timlool`**.
+2. Open the repository on GitHub and go to **Settings**.
+3. In the left sidebar click **Pages**.
+4. Under **Source**, select **GitHub Actions**.
+5. Push a commit to the **`main`** branch (or trigger the workflow manually under **Actions → Deploy to GitHub Pages → Run workflow**).
+6. Wait for the deploy action to finish (usually under a minute).
+7. Open the URL shown in Pages settings — it will be `https://USERNAME.github.io/timlool/`.
 
-### GitHub Actions (recommended)
-
-Create `.github/workflows/deploy.yml`:
-
-```yaml
-name: Deploy to GitHub Pages
-
-on:
-  push:
-    branches: [main]
-
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-      - run: npm ci
-      - run: npm run build
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: dist
-      - id: deployment
-        uses: actions/deploy-pages@v4
-```
-
-Enable **GitHub Pages** in repo Settings → Pages → Source: **GitHub Actions**.
+> **Different repository name?** Set the `VITE_BASE` environment variable in the workflow's build step to match your repo name, e.g. `VITE_BASE=/my-repo/ npm run build`.
 
 ## Project structure
 
