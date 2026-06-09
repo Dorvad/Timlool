@@ -16,6 +16,7 @@ import {
   type ProgressInfo,
 } from '@huggingface/transformers';
 import type { WorkerRequest, WorkerResponse } from '../types/transcription';
+import { decodeAudioBuffer } from '../lib/audioUtils';
 
 // ── Transformers.js environment ──────────────────────────────
 // Never read from local filesystem; rely on browser's Cache API
@@ -74,25 +75,24 @@ async function loadModel(model: string): Promise<void> {
   }
 }
 
-async function transcribe(audio: Float32Array, language: string): Promise<void> {
+async function transcribe(audioBuffer: ArrayBuffer, language: string): Promise<void> {
   if (pipe === null) {
     send({ type: 'error', message: 'המודל טרם נטען. יש לטעון מודל תחילה.' });
     return;
   }
 
   try {
-    send({ type: 'transcribing' });
+    send({ type: 'decoding' });
+    const audio = await decodeAudioBuffer(audioBuffer);
 
+    send({ type: 'transcribing' });
     const result = await pipe(audio, {
       language,
       task: 'transcribe',
-      // Process audio in 30-second chunks with 5-second overlap so longer
-      // recordings are handled gracefully even before streaming is wired up.
       chunk_length_s:  30,
       stride_length_s: 5,
     });
 
-    // The pipeline returns a single output for a single input
     const text = result.text.trim();
     send({ type: 'done', text });
   } catch (err) {
@@ -112,7 +112,7 @@ addEventListener('message', (event: MessageEvent<WorkerRequest>) => {
       void loadModel(msg.model ?? 'Xenova/whisper-base');
       break;
     case 'transcribe':
-      void transcribe(msg.audio, msg.language ?? 'he');
+      void transcribe(msg.audioBuffer, msg.language ?? 'he');
       break;
     case 'abort':
       // Abort support will be added when the pipeline exposes a cancellation

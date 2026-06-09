@@ -1,90 +1,68 @@
 import { useState, useCallback } from 'react';
-import type { AppState } from './types';
 import { Header } from './components/Header';
 import { FileDropzone } from './components/FileDropzone';
 import { ActionButtons } from './components/ActionButtons';
 import { StatusMessage } from './components/StatusMessage';
 import { TranscriptBox } from './components/TranscriptBox';
 import { Footer } from './components/Footer';
+import { useTranscriptionWorker } from './hooks/useTranscriptionWorker';
 import './App.css';
 
-const initialState: AppState = {
-  status: 'idle',
-  statusMessage: '',
-  transcript: '',
-  audioFile: null,
-};
-
 function App() {
-  const [state, setState] = useState<AppState>(initialState);
+  const [audioFile, setAudioFile] = useState<File | null>(null);
+  const { workerState, transcribeFile, reset } = useTranscriptionWorker();
 
   const handleFileSelected = useCallback((file: File) => {
-    setState({ ...initialState, audioFile: file });
-  }, []);
+    setAudioFile(file);
+    reset();
+  }, [reset]);
 
-  // Placeholder — will be replaced with Whisper/Transformers.js
-  const handleTranscribe = useCallback(async () => {
-    if (!state.audioFile) return;
-    try {
-      setState(prev => ({ ...prev, status: 'loading-model', statusMessage: 'טוען מודל תמלול...', transcript: '' }));
-      await new Promise(r => setTimeout(r, 1400));
-      setState(prev => ({ ...prev, status: 'transcribing', statusMessage: 'מתמלל את הקובץ...' }));
-      await new Promise(r => setTimeout(r, 1800));
-      setState(prev => ({
-        ...prev,
-        status: 'done',
-        statusMessage: 'התמלול הושלם בהצלחה',
-        transcript: '[כאן יופיע התמליל לאחר שילוב מנוע Whisper]',
-      }));
-    } catch {
-      setState(prev => ({
-        ...prev,
-        status: 'error',
-        statusMessage: 'אירעה שגיאה בתהליך התמלול. אפשר לנסות שוב.',
-      }));
-    }
-  }, [state.audioFile]);
+  const handleTranscribe = useCallback(() => {
+    if (!audioFile) return;
+    transcribeFile(audioFile);
+  }, [audioFile, transcribeFile]);
 
   const handleClear = useCallback(() => {
-    setState(initialState);
-  }, []);
+    setAudioFile(null);
+    reset();
+  }, [reset]);
 
   const handleCopy = useCallback(() => {
-    if (state.transcript) navigator.clipboard.writeText(state.transcript);
-  }, [state.transcript]);
+    if (workerState.transcript) navigator.clipboard.writeText(workerState.transcript);
+  }, [workerState.transcript]);
 
   const handleDownload = useCallback(() => {
-    if (!state.transcript) return;
-    const baseName = state.audioFile?.name.replace(/\.[^.]+$/, '') ?? 'תמלול';
-    const blob = new Blob([state.transcript], { type: 'text/plain;charset=utf-8' });
+    if (!workerState.transcript) return;
+    const baseName = audioFile?.name.replace(/\.[^.]+$/, '') ?? 'תמלול';
+    const blob = new Blob([workerState.transcript], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
     a.download = `${baseName}.txt`;
     a.click();
     URL.revokeObjectURL(url);
-  }, [state.transcript, state.audioFile]);
+  }, [workerState.transcript, audioFile]);
 
   return (
     <div className="app">
       <Header />
       <main className="app-main">
         <FileDropzone
-          status={state.status}
-          audioFile={state.audioFile}
+          status={workerState.status}
+          audioFile={audioFile}
           onFileSelected={handleFileSelected}
         />
         <ActionButtons
-          status={state.status}
-          hasFile={!!state.audioFile}
-          hasTranscript={!!state.transcript}
+          status={workerState.status}
+          hasFile={!!audioFile}
+          hasTranscript={!!workerState.transcript}
           onTranscribe={handleTranscribe}
           onClear={handleClear}
           onCopy={handleCopy}
           onDownload={handleDownload}
         />
-        <StatusMessage status={state.status} message={state.statusMessage} />
-        <TranscriptBox transcript={state.transcript} status={state.status} />
+        <StatusMessage status={workerState.status} message={workerState.statusMessage} />
+        <TranscriptBox transcript={workerState.transcript} status={workerState.status} />
       </main>
       <Footer />
     </div>

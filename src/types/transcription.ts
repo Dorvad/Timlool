@@ -17,14 +17,15 @@ export type ModelId = (typeof SUPPORTED_MODELS)[number]['id'];
 
 /** Messages sent FROM the main thread TO the worker. */
 export type WorkerRequest =
-  | { type: 'load';       model?: string                         }
-  | { type: 'transcribe'; audio: Float32Array; language?: string }
-  | { type: 'abort'                                              };
+  | { type: 'load';       model?: string                               }
+  | { type: 'transcribe'; audioBuffer: ArrayBuffer; language?: string  }
+  | { type: 'abort'                                                    };
 
 /** Messages sent FROM the worker TO the main thread. */
 export type WorkerResponse =
-  | { type: 'model-loading'; progress: number; file: string     }
-  | { type: 'model-ready';   model: string                      }
-  | { type: 'transcribing'                                      }
-  | { type: 'done';          text: string                       }
-  | { type: 'error';         message: string                    };
+  | { type: 'model-loading'; progress: number; file: string           }
+  | { type: 'model-ready';   model: string                            }
+  | { type: 'decoding'                                                 }
+  | { type: 'transcribing'                                            }
+  | { type: 'done';          text: string                             }
+  | { type: 'error';         message: string                          };
