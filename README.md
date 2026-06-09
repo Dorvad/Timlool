@@ -1,19 +1,30 @@
 # תמלולון
 
-A simple, fully static browser-based audio transcription tool. Upload a short audio file and get a Hebrew transcription — all processing happens locally in your browser, with no server, no API keys, and no data sent anywhere.
+A fully static, browser-based Hebrew audio transcription tool.
+Upload an audio file and get a Hebrew transcript — all processing happens locally in your browser using [Whisper](https://openai.com/research/whisper) via [Transformers.js](https://huggingface.co/docs/transformers.js).
+No server, no API keys, no data ever leaves your device.
 
-## What it does
+## Features
 
-- Accepts audio files (mp3, wav, m4a, ogg, webm, flac — up to 25 MB)
-- Transcribes speech to text using [Whisper](https://openai.com/research/whisper) via [Transformers.js](https://huggingface.co/docs/transformers.js) *(integration coming soon)*
-- Runs entirely in the browser — completely private
-- Hebrew UI with RTL layout, mobile-friendly
+- **Three Whisper models** — Tiny (39 MB), Base (74 MB, default), Small (244 MB)
+- **WhatsApp voice note support** — accepts `.opus` files; helpful fallback message if the browser can't decode the codec
+- **Editable transcript** — fix OCR mistakes before copying or downloading
+- **Word count + character count**
+- **Copy / Download as `.txt`**
+- **Auto-save** — last transcript persists in `localStorage` across page reloads
+- **"נקה טקסט"** — trims whitespace and collapses repeated blank lines
+- **Fully offline after first model download** — model files are cached by the browser
 
 ## Tech stack
 
-- **React + TypeScript** — component structure and type safety
-- **Vite** — fast dev server and build tool
-- **Transformers.js** *(planned)* — runs Whisper in the browser via ONNX/WebAssembly
+| Layer | Technology |
+|---|---|
+| UI | React 19 + TypeScript |
+| Build | Vite 8 |
+| Inference | `@huggingface/transformers` (Whisper, WebAssembly) |
+| Audio decode | `OfflineAudioContext` (works in Web Workers) |
+| Worker | Dedicated Web Worker (keeps UI responsive) |
+| Fonts | Heebo (Google Fonts) |
 
 ## Run locally
 
@@ -22,7 +33,7 @@ npm install
 npm run dev
 ```
 
-Then open [http://localhost:5173/timlool/](http://localhost:5173/timlool/) in your browser.
+Open [http://localhost:5173/timlool/](http://localhost:5173/timlool/).
 
 To build for production:
 
@@ -30,20 +41,20 @@ To build for production:
 npm run build
 ```
 
-Output goes to `dist/`.
+Output goes to `dist/`. Serve with any static host (`npx serve dist` or GitHub Pages).
 
 ## Deploy to GitHub Pages
 
-The Vite config sets `base: '/timlool/'` to match the GitHub Pages URL structure.
+The Vite config sets `base: '/timlool/'`. Override with `VITE_BASE` env var if needed.
 
-### Option 1 — Manual deploy
+### Manual
 
 ```bash
 npm run build
 npx gh-pages -d dist
 ```
 
-### Option 2 — GitHub Actions (recommended)
+### GitHub Actions (recommended)
 
 Create `.github/workflows/deploy.yml`:
 
@@ -80,26 +91,67 @@ jobs:
         uses: actions/deploy-pages@v4
 ```
 
-Enable **GitHub Pages** in your repo settings → Pages → Source: **GitHub Actions**.
+Enable **GitHub Pages** in repo Settings → Pages → Source: **GitHub Actions**.
 
 ## Project structure
 
 ```
 src/
   components/
-    Header.tsx / Header.css         — app title and subtitle
-    FileUpload.tsx / FileUpload.css — drag-and-drop upload + transcribe button
-    StatusArea.tsx / StatusArea.css — processing status indicator
-    TranscriptArea.tsx / ...        — transcript display with copy button
-    Footer.tsx / Footer.css         — privacy notice
-  App.tsx                           — top-level state and orchestration
-  types.ts                          — shared TypeScript types
-  index.css                         — global styles, CSS variables
+    Header.tsx / .css          — app title
+    FileDropzone.tsx / .css    — drag-and-drop + file validation + duration
+    ModelSelector.tsx / .css   — Tiny / Base / Small model picker
+    ActionButtons.tsx / .css   — תמלל / נקה / העתק / הורד TXT / נקה טקסט
+    StatusMessage.tsx / .css   — loading progress bar + done / error states
+    TranscriptBox.tsx / .css   — editable textarea, word/char count, disclaimer
+    Footer.tsx / .css          — privacy notice
+    icons.tsx                  — SVG icon components
+  hooks/
+    useTranscriptionWorker.ts  — worker lifecycle, model switching, status state
+  workers/
+    transcriptionWorker.ts     — Whisper pipeline, audio decode, inference
+  lib/
+    audioUtils.ts              — decodeAudioBuffer (OfflineAudioContext, 16 kHz mono)
+  types/
+    transcription.ts           — WorkerRequest / WorkerResponse types, model list
+  types.ts                     — TranscriptionStatus, AppState
+  App.tsx                      — top-level state and layout
+  index.css                    — global CSS variables and base styles
 ```
 
-## Roadmap
+## QA checklist
 
-- [ ] Integrate Whisper via Transformers.js for real transcription
-- [ ] Show model download progress bar
-- [ ] Support longer files with chunked processing
-- [ ] Export transcript as `.txt`
+Run through this before shipping a new version.
+
+### File upload
+
+- [ ] **Upload MP3** — file name and size shown; transcription completes
+- [ ] **Upload WAV** — same
+- [ ] **Upload OPUS** — WhatsApp voice note or standard `.opus`; either transcribes or shows the "הדפדפן לא הצליח לקרוא" message with instructions
+- [ ] **File > 25 MB** — rejected at the dropzone with a Hebrew size error, transcription never starts
+- [ ] **Wrong file type** (e.g. `.pdf`) — rejected with a Hebrew format error
+
+### Model selector
+
+- [ ] **Switch to Tiny** — next transcription uses the fast model; loading message appears on first use
+- [ ] **Switch back to Base** — re-downloads if needed, then reuses cache on repeat
+- [ ] **Selector disabled while transcribing** — cannot change model mid-run
+
+### Transcript actions
+
+- [ ] **Copy transcript** — clipboard receives the current (possibly edited) text; button briefly shows "הועתק!"
+- [ ] **Download TXT** — file named after the audio file downloads with the transcript text
+- [ ] **Edit transcript** — typing in the textarea updates word/char counts
+- [ ] **"נקה טקסט"** — collapses multiple spaces and blank lines; does not alter words
+- [ ] **Clear (נקה)** — dropzone resets, transcript clears, word count shows 0
+- [ ] **localStorage restore** — reload the page; last transcript reappears in the textarea
+
+### Error handling
+
+- [ ] **Decode failure** — shows "הדפדפן לא הצליח לקרוא את הקובץ הזה. נסה להמיר אותו ל-MP3 או WAV ולהעלות שוב."
+- [ ] **Model load failure** (disconnect network mid-download) — shows Hebrew error with hint to check connection
+
+### Cross-device
+
+- [ ] **Chrome desktop** — full flow works
+- [ ] **Android Chrome** — upload, transcription, and copy all work on mobile
