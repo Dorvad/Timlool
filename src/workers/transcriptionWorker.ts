@@ -68,6 +68,9 @@ async function loadModel(model: string): Promise<void> {
     send({ type: 'model-loading', progress: 0, file: '' });
 
     pipe = await pipeline('automatic-speech-recognition', model, {
+      // q8 = int8 quantization; avoids q4/MatMulNBits format which the
+      // bundled ONNX Runtime version doesn't support
+      dtype: 'q8',
       progress_callback: onProgress,
     });
 
