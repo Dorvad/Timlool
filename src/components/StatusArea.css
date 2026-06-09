@@ -1,0 +1,59 @@
+.status-area {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+  font-weight: 500;
+  border: 1px solid transparent;
+}
+
+.status--idle {
+  background-color: var(--color-surface-alt);
+  color: var(--color-text-secondary);
+  border-color: var(--color-border);
+}
+
+.status--busy {
+  background-color: var(--color-accent-light);
+  color: var(--color-accent);
+  border-color: rgba(37, 99, 235, 0.25);
+}
+
+.status--done {
+  background-color: var(--color-success-light);
+  color: var(--color-success);
+  border-color: rgba(22, 163, 74, 0.25);
+}
+
+.status--error {
+  background-color: var(--color-error-light);
+  color: var(--color-error);
+  border-color: rgba(220, 38, 38, 0.25);
+}
+
+.status-icon {
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.status-message {
+  flex: 1;
+}
+
+.status-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
