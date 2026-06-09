@@ -1,0 +1,29 @@
+/* Adds COOP/COEP headers required for SharedArrayBuffer (ONNX multi-threading).
+   Needed because GitHub Pages doesn't allow custom response headers. */
+self.addEventListener("install", () => self.skipWaiting());
+self.addEventListener("activate", (event) => event.waitUntil(self.clients.claim()));
+
+async function handleFetch(event) {
+  if (event.request.cache === "only-if-cached" && event.request.mode !== "same-origin") {
+    return;
+  }
+  let response;
+  try {
+    response = await fetch(event.request);
+  } catch {
+    return;
+  }
+  const headers = new Headers(response.headers);
+  headers.set("Cross-Origin-Opener-Policy", "same-origin");
+  headers.set("Cross-Origin-Embedder-Policy", "require-corp");
+  headers.set("Cross-Origin-Resource-Policy", "cross-origin");
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+}
+
+self.addEventListener("fetch", (event) => {
+  event.respondWith(handleFetch(event));
+});
