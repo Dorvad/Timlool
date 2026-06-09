@@ -6,10 +6,10 @@ export const DEFAULT_LANGUAGE = 'he';
 
 /** Whisper model options the user can choose from. */
 export const SUPPORTED_MODELS = [
-  { id: 'Xenova/whisper-tiny',  label: 'Tiny (39M) – מהיר מאוד'    },
-  { id: 'Xenova/whisper-base',  label: 'Base (74M) – מומלץ'          },
-  { id: 'Xenova/whisper-small', label: 'Small (244M) – מדויק יותר'   },
-] as const satisfies ReadonlyArray<{ id: string; label: string }>;
+  { id: 'Xenova/whisper-tiny',  label: 'מהיר יותר, פחות מדויק',      size: '39MB'  },
+  { id: 'Xenova/whisper-base',  label: 'מאוזן',                       size: '74MB'  },
+  { id: 'Xenova/whisper-small', label: 'איכות טובה יותר, איטי יותר', size: '244MB' },
+] as const satisfies ReadonlyArray<{ id: string; label: string; size: string }>;
 
 export type ModelId = (typeof SUPPORTED_MODELS)[number]['id'];
 

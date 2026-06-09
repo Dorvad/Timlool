@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import type { WorkerRequest, WorkerResponse } from '../types/transcription';
-import { DEFAULT_MODEL, DEFAULT_LANGUAGE } from '../types/transcription';
+import { DEFAULT_LANGUAGE } from '../types/transcription';
 import type { TranscriptionStatus } from '../types';
 
 interface WorkerState {
@@ -15,12 +15,16 @@ const INITIAL_STATE: WorkerState = {
   transcript: '',
 };
 
-export function useTranscriptionWorker() {
+export function useTranscriptionWorker(model: string) {
   const [workerState, setWorkerState] = useState<WorkerState>(INITIAL_STATE);
-  const workerRef  = useRef<Worker | null>(null);
-  const modelReady = useRef(false);
-  const pendingBuf = useRef<ArrayBuffer | null>(null);
-  const activeRef  = useRef(false);
+  const workerRef      = useRef<Worker | null>(null);
+  const loadedModelRef = useRef<string | null>(null); // which model the worker currently has loaded
+  const modelRef       = useRef(model);
+  const pendingBuf     = useRef<ArrayBuffer | null>(null);
+  const activeRef      = useRef(false);
+
+  // Keep modelRef current without re-creating the worker
+  modelRef.current = model;
 
   useEffect(() => {
     const worker = new Worker(
@@ -32,22 +36,23 @@ export function useTranscriptionWorker() {
     worker.onmessage = (event: MessageEvent<WorkerResponse>) => {
       const msg = event.data;
 
-      // Track model readiness unconditionally so a post-reset transcription
-      // can skip the load round-trip when the worker already has the pipeline.
-      if (msg.type === 'model-ready') modelReady.current = true;
+      // Always record which model the worker has ready, even between sessions,
+      // so a post-reset transcription can skip the load round-trip when the
+      // worker still holds the right pipeline.
+      if (msg.type === 'model-ready') loadedModelRef.current = msg.model;
 
       if (!activeRef.current) return;
 
       switch (msg.type) {
         case 'model-loading': {
           const p = Math.round(msg.progress ?? 0);
-          const label = msg.file ? ` (${msg.file.split('/').pop() ?? ''})` : '';
+          const fileHint = msg.file ? ` (${msg.file.split('/').pop() ?? ''})` : '';
           setWorkerState(prev => ({
             ...prev,
             status: 'loading-model',
             statusMessage: p > 0
-              ? `טוען מודל${label}... ${p}%`
-              : 'מתחיל לטעון את מודל Whisper...',
+              ? `טוען מודל${fileHint}... ${p}%`
+              : 'מוריד מודל Whisper בפעם הראשונה...',
           }));
           break;
         }
@@ -114,6 +119,7 @@ export function useTranscriptionWorker() {
     const worker = workerRef.current;
     if (!worker) return;
 
+    const currentModel = modelRef.current;
     activeRef.current = true;
     pendingBuf.current = null;
     setWorkerState({ status: 'loading-model', statusMessage: 'קורא את הקובץ...', transcript: '' });
@@ -123,8 +129,8 @@ export function useTranscriptionWorker() {
       if (!activeRef.current) return;
       const buf = reader.result as ArrayBuffer;
 
-      if (modelReady.current) {
-        // Pipeline already loaded — send directly
+      if (loadedModelRef.current === currentModel) {
+        // Worker already has the right model loaded — send transcribe directly
         const req: WorkerRequest = {
           type: 'transcribe',
           audioBuffer: buf,
@@ -132,9 +138,9 @@ export function useTranscriptionWorker() {
         };
         worker.postMessage(req, [buf]);
       } else {
-        // Store buffer; send when model-ready fires
+        // Model not loaded yet (or a different model): store buffer and trigger load
         pendingBuf.current = buf;
-        worker.postMessage({ type: 'load', model: DEFAULT_MODEL } satisfies WorkerRequest);
+        worker.postMessage({ type: 'load', model: currentModel } satisfies WorkerRequest);
       }
     };
     reader.onerror = () => {

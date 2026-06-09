@@ -1,0 +1,104 @@
+.model-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.model-selector-heading {
+  font-size: 0.73rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-3);
+}
+
+/* ── Options card ───────────────────────────────── */
+
+.model-selector-options {
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  transition: opacity 0.2s ease;
+}
+
+.model-selector-options--disabled {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+/* ── Individual option row ──────────────────────── */
+
+.model-option {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.7rem 1rem;
+  cursor: pointer;
+  border-block-end: 1px solid var(--border);
+  transition: background-color 0.15s ease;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.model-option:last-child {
+  border-block-end: none;
+}
+
+.model-option:hover {
+  background-color: var(--accent-bg);
+}
+
+.model-option--selected {
+  background-color: var(--accent-bg);
+}
+
+/* Native radio, styled with accent-color */
+.model-option-radio {
+  flex-shrink: 0;
+  width: 17px;
+  height: 17px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+/* Label fills available space */
+.model-option-label {
+  flex: 1;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-2);
+  transition: color 0.15s ease;
+}
+
+.model-option--selected .model-option-label {
+  color: var(--accent-hover);
+  font-weight: 600;
+}
+
+/* Size pill */
+.model-option-size {
+  flex-shrink: 0;
+  font-size: 0.73rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-3);
+  background-color: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  padding: 0.15rem 0.5rem;
+}
+
+/* ── Info note ──────────────────────────────────── */
+
+.model-selector-note {
+  margin: 0;
+  padding: 0.55rem 0.85rem;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-inline-start: 3px solid var(--border-strong);
+  border-radius: var(--r-sm);
+  font-size: 0.78rem;
+  color: var(--text-3);
+  line-height: 1.55;
+}

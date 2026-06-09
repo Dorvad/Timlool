@@ -1,21 +1,27 @@
 import { useState, useCallback, useEffect } from 'react';
 import { Header } from './components/Header';
 import { FileDropzone } from './components/FileDropzone';
+import { ModelSelector } from './components/ModelSelector';
 import { ActionButtons } from './components/ActionButtons';
 import { StatusMessage } from './components/StatusMessage';
 import { TranscriptBox } from './components/TranscriptBox';
 import { Footer } from './components/Footer';
 import { useTranscriptionWorker } from './hooks/useTranscriptionWorker';
+import { DEFAULT_MODEL } from './types/transcription';
+import type { ModelId } from './types/transcription';
 import './App.css';
 
 const STORAGE_KEY = 'timlool-transcript';
 
 function App() {
   const [audioFile, setAudioFile] = useState<File | null>(null);
-  const { workerState, transcribeFile, reset } = useTranscriptionWorker();
+  const [selectedModel, setSelectedModel] = useState<ModelId>(DEFAULT_MODEL);
+  const { workerState, transcribeFile, reset } = useTranscriptionWorker(selectedModel);
   const [editedTranscript, setEditedTranscript] = useState<string>(
     () => localStorage.getItem(STORAGE_KEY) ?? '',
   );
+
+  const isBusy = workerState.status === 'loading-model' || workerState.status === 'transcribing';
 
   // Populate editable transcript when a new transcription completes
   useEffect(() => {
@@ -77,6 +83,11 @@ function App() {
           status={workerState.status}
           audioFile={audioFile}
           onFileSelected={handleFileSelected}
+        />
+        <ModelSelector
+          selectedModel={selectedModel}
+          onModelChange={setSelectedModel}
+          disabled={isBusy}
         />
         <ActionButtons
           status={workerState.status}
