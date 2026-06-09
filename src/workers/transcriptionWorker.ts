@@ -23,6 +23,12 @@ import { decodeAudioBuffer } from '../lib/audioUtils';
 env.allowLocalModels = false;
 env.useBrowserCache  = true;
 
+// Disable ONNX multi-threading: GitHub Pages lacks COOP/COEP headers
+// needed for SharedArrayBuffer, so the threaded WASM backend will fail.
+// Single-threaded mode avoids SharedArrayBuffer entirely.
+// @ts-expect-error – onnx backend config not in public types
+env.backends.onnx.wasm.numThreads = 1;
+
 // ── Module-level state ───────────────────────────────────────
 let pipe: AutomaticSpeechRecognitionPipeline | null = null;
 let loadedModel: string | null = null;
@@ -67,10 +73,11 @@ async function loadModel(model: string): Promise<void> {
 
     loadedModel = model;
     send({ type: 'model-ready', model });
-  } catch {
+  } catch (err) {
+    const detail = err instanceof Error ? err.message : String(err);
     send({
       type: 'error',
-      message: 'שגיאה בטעינת המודל. יש לבדוק את החיבור לאינטרנט ולנסות שוב.',
+      message: `שגיאה בטעינת המודל: ${detail}`,
     });
   }
 }
