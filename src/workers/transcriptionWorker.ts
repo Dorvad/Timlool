@@ -71,6 +71,9 @@ async function loadModel(model: string): Promise<void> {
       // q8 = int8 quantization; avoids q4/MatMulNBits format which the
       // bundled ONNX Runtime version doesn't support
       dtype: 'q8',
+      // 'basic' skips the extended graph optimizer that triggers the
+      // TransposeDQWeightsForMatMulNBits crash in onnxruntime-web 1.26.0-dev
+      session_options: { graphOptimizationLevel: 'basic' },
       progress_callback: onProgress,
     });
 
