@@ -18,3 +18,20 @@
 .footer-lock {
   font-size: 0.75rem;
 }
+
+.footer-clear-btn {
+  margin-top: 0.5rem;
+  background: none;
+  border: none;
+  color: var(--text-3);
+  font-size: 0.75rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  text-decoration: underline;
+  font-family: inherit;
+}
+
+.footer-clear-btn:active {
+  color: var(--text-2);
+}
