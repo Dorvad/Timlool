@@ -5,5 +5,5 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   // Set base to repo name for GitHub Pages; override with VITE_BASE env var if needed
-  base: process.env.VITE_BASE ?? '/timlool/',
+  base: process.env.VITE_BASE ?? '/Timlool/',
 })
