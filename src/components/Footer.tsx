@@ -4,7 +4,8 @@ export function Footer() {
   return (
     <footer className="footer">
       <p className="footer-text">
-        כל העיבוד מתבצע מקומית בדפדפן שלך — לא נשלח מידע לשרת חיצוני
+        <span className="footer-lock" aria-hidden="true">🔒</span>
+        כל העיבוד מתבצע מקומית בדפדפן — הנתונים לא עוזבים את המכשיר שלך
       </p>
     </footer>
   );

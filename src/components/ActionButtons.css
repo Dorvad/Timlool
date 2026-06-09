@@ -1,0 +1,127 @@
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+/* ── Primary button ─────────────────────────────────── */
+
+.btn-primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  width: 100%;
+  min-height: 54px;
+  padding: 0 1.5rem;
+  font-size: 1.075rem;
+  font-weight: 700;
+  color: #fff;
+  background-color: var(--accent);
+  border: none;
+  border-radius: var(--r-md);
+  letter-spacing: 0.01em;
+  transition: background-color 0.15s ease, transform 0.1s ease, opacity 0.15s ease;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--accent-hover);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: scale(0.982);
+}
+
+.btn-primary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn-primary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* Spinner inside primary button */
+.btn-spinner {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2.5px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: btn-spin 0.65s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes btn-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Secondary buttons ──────────────────────────────── */
+
+.action-secondary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.btn-ghost {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  flex: 1 1 120px;
+  min-height: 46px;
+  min-width: 0;
+  padding: 0 0.875rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-2);
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  white-space: nowrap;
+  transition: background-color 0.15s ease, border-color 0.15s ease,
+              color 0.15s ease, transform 0.1s ease;
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background-color: var(--surface-alt);
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+
+.btn-ghost:active:not(:disabled) {
+  transform: scale(0.978);
+}
+
+.btn-ghost:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn-ghost:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Danger variant – נקה */
+.btn-ghost--danger {
+  color: #b91c1c;
+  border-color: rgba(185, 28, 28, 0.2);
+  background-color: #fff5f5;
+}
+
+.btn-ghost--danger:hover:not(:disabled) {
+  background-color: #fee2e2;
+  border-color: rgba(185, 28, 28, 0.4);
+  color: #991b1b;
+}
+
+/* Copied confirmation variant */
+.btn-ghost--copied {
+  color: var(--ok);
+  border-color: var(--ok-border);
+  background-color: var(--ok-bg);
+}
