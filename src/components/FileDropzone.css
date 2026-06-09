@@ -159,3 +159,16 @@
   font-weight: 500;
   line-height: 1.5;
 }
+
+/* WhatsApp / browser-compat tip */
+.dropzone-whatsapp-tip {
+  margin: 0;
+  padding: 0.55rem 0.85rem;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-inline-start: 3px solid var(--accent);
+  border-radius: var(--r-sm);
+  font-size: 0.78rem;
+  color: var(--text-3);
+  line-height: 1.55;
+}

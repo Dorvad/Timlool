@@ -83,7 +83,7 @@ export function FileDropzone({ status, audioFile, onFileSelected }: FileDropzone
         <input
           ref={inputRef}
           type="file"
-          accept="audio/*"
+          accept="audio/*,.opus"
           onChange={(e) => {
             const f = e.target.files?.[0];
             if (f) validateAndSelect(f);
@@ -127,6 +127,11 @@ export function FileDropzone({ status, audioFile, onFileSelected }: FileDropzone
       {fileError && (
         <div className="dropzone-error" role="alert">{fileError}</div>
       )}
+
+      <p className="dropzone-whatsapp-tip">
+        קבצי וואטסאפ בדרך כלל עובדים, אבל התמיכה תלויה בדפדפן.
+        אם יש בעיה, מומלץ להמיר ל-MP3 או WAV.
+      </p>
     </div>
   );
 }

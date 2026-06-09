@@ -15,10 +15,15 @@ export function formatDuration(seconds: number): string {
  * in both the main thread and a Web Worker.
  */
 export async function decodeAudioBuffer(buffer: ArrayBuffer): Promise<Float32Array> {
-  // A minimal OfflineAudioContext is sufficient to call decodeAudioData;
-  // its length/sampleRate are irrelevant for decoding (only used for rendering).
   const decodeCtx = new OfflineAudioContext(1, 1, WHISPER_SAMPLE_RATE);
-  const decoded = await decodeCtx.decodeAudioData(buffer);
+  let decoded: AudioBuffer;
+  try {
+    decoded = await decodeCtx.decodeAudioData(buffer);
+  } catch {
+    throw new Error(
+      'הדפדפן לא הצליח לקרוא את הקובץ הזה. נסה להמיר אותו ל-MP3 או WAV ולהעלות שוב.',
+    );
+  }
 
   // Resample and down-mix to mono at 16 kHz
   const targetLength = Math.round(decoded.duration * WHISPER_SAMPLE_RATE);

@@ -67,10 +67,10 @@ async function loadModel(model: string): Promise<void> {
 
     loadedModel = model;
     send({ type: 'model-ready', model });
-  } catch (err) {
+  } catch {
     send({
       type: 'error',
-      message: err instanceof Error ? err.message : 'שגיאה בטעינת המודל',
+      message: 'שגיאה בטעינת המודל. יש לבדוק את החיבור לאינטרנט ולנסות שוב.',
     });
   }
 }
@@ -81,10 +81,21 @@ async function transcribe(audioBuffer: ArrayBuffer, language: string): Promise<v
     return;
   }
 
+  let audio: Float32Array;
   try {
     send({ type: 'decoding' });
-    const audio = await decodeAudioBuffer(audioBuffer);
+    audio = await decodeAudioBuffer(audioBuffer);
+  } catch (err) {
+    send({
+      type: 'error',
+      message: err instanceof Error
+        ? err.message
+        : 'הדפדפן לא הצליח לקרוא את הקובץ הזה. נסה להמיר אותו ל-MP3 או WAV ולהעלות שוב.',
+    });
+    return;
+  }
 
+  try {
     send({ type: 'transcribing' });
     const result = await pipe(audio, {
       language,
@@ -98,7 +109,7 @@ async function transcribe(audioBuffer: ArrayBuffer, language: string): Promise<v
   } catch (err) {
     send({
       type: 'error',
-      message: err instanceof Error ? err.message : 'שגיאה בתהליך התמלול',
+      message: err instanceof Error ? err.message : 'שגיאה בתהליך התמלול. יש לנסות שוב.',
     });
   }
 }
