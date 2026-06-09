@@ -19,42 +19,71 @@
   background-color: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--r-lg);
-  padding: 1.25rem 1.5rem;
   box-shadow: var(--shadow-card);
-  min-height: 180px;
+  overflow: hidden;
   transition: border-color 0.2s ease;
 }
 
-@media (min-width: 600px) {
-  .transcript-body { min-height: 220px; }
-}
+/* ── Editable textarea ─────────────────────────────── */
 
-.transcript-body--empty {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.transcript-body--filled {
-  border-color: var(--border);
-}
-
-/* ── Content ───────────────────────────────────────── */
-
-.transcript-text {
-  margin: 0;
+.transcript-textarea {
+  display: block;
+  width: 100%;
+  min-height: 180px;
+  box-sizing: border-box;
+  padding: 1.25rem 1.5rem;
+  background: none;
+  border: none;
+  outline: none;
+  resize: vertical;
+  font: inherit;
   font-size: 1rem;
   line-height: 1.9;
   color: var(--text);
+  direction: rtl;
   white-space: pre-wrap;
   word-break: break-word;
 }
 
-.transcript-empty {
-  margin: 0;
-  font-size: 0.925rem;
+@media (min-width: 600px) {
+  .transcript-textarea { min-height: 220px; }
+}
+
+.transcript-textarea::placeholder {
   color: var(--text-3);
-  text-align: center;
+  font-size: 0.925rem;
+  font-style: normal;
+}
+
+.transcript-textarea[readonly] {
+  cursor: default;
+  opacity: 0.6;
+}
+
+/* ── Footer: counts ────────────────────────────────── */
+
+.transcript-footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.transcript-counts {
+  font-size: 0.76rem;
+  color: var(--text-3);
+}
+
+/* ── Disclaimer ────────────────────────────────────── */
+
+.transcript-disclaimer {
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  font-size: 0.78rem;
+  color: var(--text-3);
+  line-height: 1.55;
+  font-style: italic;
 }
 
 /* ── Skeleton loading ──────────────────────────────── */
@@ -63,7 +92,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.8rem;
-  padding-block: 0.15rem;
+  padding: 1.4rem 1.5rem;
 }
 
 .skeleton-line {

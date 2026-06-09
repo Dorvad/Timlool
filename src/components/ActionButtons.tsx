@@ -11,11 +11,12 @@ interface ActionButtonsProps {
   onClear: () => void;
   onCopy: () => void;
   onDownload: () => void;
+  onCleanup: () => void;
 }
 
 export function ActionButtons({
   status, hasFile, hasTranscript,
-  onTranscribe, onClear, onCopy, onDownload,
+  onTranscribe, onClear, onCopy, onDownload, onCleanup,
 }: ActionButtonsProps) {
   const [copied, setCopied] = useState(false);
   const isBusy = status === 'loading-model' || status === 'transcribing';
@@ -49,7 +50,7 @@ export function ActionButtons({
         )}
       </button>
 
-      {/* Secondary — shown once a file is present */}
+      {/* Secondary — shown once a file or transcript is present */}
       {showSecondary && (
         <div className="action-secondary">
           <button
@@ -70,7 +71,7 @@ export function ActionButtons({
                 aria-label="העתק תמלול"
               >
                 {copied ? <CheckIcon size={15} /> : <CopyIcon size={15} />}
-                <span>{copied ? 'הועתק!' : 'העתק תמלול'}</span>
+                <span>{copied ? 'הועתק!' : 'העתק'}</span>
               </button>
 
               <button
@@ -79,7 +80,15 @@ export function ActionButtons({
                 aria-label="הורד כקובץ TXT"
               >
                 <DownloadIcon size={15} />
-                <span>הורד כקובץ TXT</span>
+                <span>הורד TXT</span>
+              </button>
+
+              <button
+                className="btn-ghost"
+                onClick={onCleanup}
+                aria-label="נקה עיצוב טקסט"
+              >
+                <span>נקה טקסט</span>
               </button>
             </>
           )}
